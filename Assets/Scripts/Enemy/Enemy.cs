@@ -4,15 +4,30 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public float speed = 5f;
+    private Health h;
+    private Rigidbody rb;
+
     void Start()
     {
-        
+        rb = GetComponent<Rigidbody>();
+        h = GetComponent<Health>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        // Calculate the movement vector
+        Vector2 movement = Vector2.down * speed;
+
+        // Apply the movement to the enemy's rigidbody
+        rb.velocity = movement;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Player" || other.tag == "Bullet")
+        {
+            h.takeDamage();
+        }
     }
 }

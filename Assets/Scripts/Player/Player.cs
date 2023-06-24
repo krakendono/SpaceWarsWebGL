@@ -12,10 +12,13 @@ public class Player : MonoBehaviour
     private float objectWidth;
     private float objectHeight;
 
+    private Health h;
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        h = GetComponent<Health>();
         mainCamera = Camera.main;
         screenBounds = mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, mainCamera.transform.position.z));
 
@@ -41,4 +44,13 @@ public class Player : MonoBehaviour
         viewPos.y = Mathf.Clamp(viewPos.y, screenBounds.y + objectHeight, screenBounds.y * -1 - objectHeight);
         transform.position = viewPos;
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Enemy")
+        {
+            h.takeDamage();
+        }
+    }
+
 }
