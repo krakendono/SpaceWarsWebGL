@@ -4,47 +4,47 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
-    public int _Health;
-    private GameObject go;
-    public bool _isShield;
+    protected int health; // Health that can be set for the gameobject
+    private bool _isShield; // Make sure the player cannot double shield and extra lives
 
-    private void Start()
+    protected void SetPlayerHealth ()
     {
-        go = this.gameObject;
-    }
-
-    public void restartGame()
-    {
-        _Health = 3;
+        // Used for the player to get their health
+        health = 3;
     }
     
 
-
-    public void takeDamage()
+    // Used for the enemy to take damage
+    protected void TakeDamage()
     {
-            _isShield = false;
-            _Health--;
-            if (_Health <= 0)
-            {
-                if (go.tag == "Player")
-                {
-                    GameManager.Instance.GameState(GameManager.gameState.GameOver);
-                    this.gameObject.SetActive(false);
-                }
-                if (go.tag == "Enemy")
-                {
-                    GameManager.Instance.addScore();
-                    Destroy(gameObject);
-                }
-
+        // Minus health if gameobject health is below or equal to zero destory gameobject
+        health--;
+        if (health <= 0)
+        {
+            Destroy(gameObject);
         }
     }
 
-    public void shield()
+    // Player death triggers the gameover state and when hit removes the shield
+    protected void PlayerTakeDamage()
+    {
+        _isShield = false;
+        health--;
+
+        // When player reaches 0 change gamestate and destroy game object
+        if (health <= 0)
+        {
+            GameManager.Instance.GameState(GameManager.gameState.GameOver);
+            Destroy(gameObject);
+        }
+    }
+
+    // Turn the shield on if it is already on nothing happens
+    protected void ShieldOn()
     {
         if (!_isShield)
         {
-            _Health++;
+            health++;
             _isShield = true;
         }
     }

@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    // Create the singelton method
     public static GameManager Instance
     {
         get
@@ -40,78 +41,115 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public enum gameState
+    // Create the enum game state parameters
+    internal enum gameState
     {
         StartGame,
         Playing,
         GameOver
     }
 
-    public gameState currentGameState;
+    internal gameState currentGameState;
 
     private static GameManager instance;
-    public int score;
-    public TMP_Text scoreNum;
-    public GameObject[] GUI;
-    public GameObject playerObject;
-    private Player player;
+    private int currentScore; // The score that is tallied up on enemy death
+    [SerializeField]
+    private TMP_Text scoreNumber; // Get the score text UI prefab
+    [SerializeField]
+    private GameObject[] GUI; // Get the Game UI prefab
+    [SerializeField]
+    private GameObject playerObject; // Get the player prefab
+    [SerializeField]
+    private GameObject playerSpawnPoint; // Get the spawn point for the player 
+    private Player player; // Get the player script from the player prefab
+    [SerializeField]
+    internal GameObject[] livesUI; // Get the lives UI
+
 
     private void Start()
     {        
+        // Set the current game state to display the correct UI and not spawn enemies
         currentGameState = gameState.StartGame;
         GameState(currentGameState);
-        player = playerObject.GetComponent<Player>();
     }
 
-    public void addScore()
+
+    // When enemy dies add to the score then update the score text UI
+    internal void AddScore()
     {
-        score++;
-        scoreNum.text = score.ToString();
+        currentScore++;
+        scoreNumber.text = currentScore.ToString();
     }
 
-    public void GameState(gameState state)
+    // Cycle between each gamestate
+    internal void GameState(gameState state)
     {
         currentGameState = state;
         switch (currentGameState)
         {
             case gameState.StartGame:
-                playerObject.SetActive(false);
-                score = 0;
-                scoreNum.text = score.ToString();
-                GUI[0].SetActive(true);
-                GUI[1].SetActive(false);
-                GUI[2].SetActive(false);
+                StartingGame();
                 break;
             case gameState.Playing:
-                playerObject.SetActive(true);
-                GUI[0].SetActive(false);
-                GUI[1].SetActive(true);
-                GUI[2].SetActive(false);
-                player.startGames();
+                PlayingGame();
                 break;
             case gameState.GameOver:
-                GUI[0].SetActive(false);
-                GUI[1].SetActive(false);
-                GUI[2].SetActive(true);
-                StartCoroutine(gameOverWait());
+                GameIsOver();
                 break;
         }
     }
 
-    public void Update()
+    // Set the score back to zero and use the start game GUI
+    void StartingGame()
     {
+        currentScore = 0;
+        scoreNumber.text = currentScore.ToString();
+        GUI[0].SetActive(true);
+        GUI[1].SetActive(false);
+        GUI[2].SetActive(false);
+    }
+
+    // Player gets created and given health game playing GUI is on and lives are turned on
+    void PlayingGame()
+    {
+        Instantiate(playerObject, playerSpawnPoint.transform.position, playerSpawnPoint.transform.rotation);
+        player = playerObject.GetComponent<Player>();
+        GUI[0].SetActive(false);
+        GUI[1].SetActive(true);
+        GUI[2].SetActive(false);
+        foreach (GameObject lifeGUI in livesUI)
+        {
+            lifeGUI.SetActive(true);
+        }
+        player.StartGames();
+    }
+
+    // Gameover GUI is turned on and will switch to the start game after 5 seconds
+    void GameIsOver()
+    {
+        GUI[0].SetActive(false);
+        GUI[1].SetActive(false);
+        GUI[2].SetActive(true);
+        StartCoroutine(GameOverWait());
+    }
+
+    void Update()
+    {
+        // Player can start the game with the R key if they are in the StartGame game state
         if (Input.GetKeyDown(KeyCode.R) && currentGameState == gameState.StartGame)
         {
             GameState(gameState.Playing);
         }
 
+        // At any time the player can quit playing the game by hitting the escape key
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Application.Quit();
         }
     }
 
-    IEnumerator gameOverWait()
+    // Change the game state back to start game after 5 seconds
+    IEnumerator GameOverWait()
     {
         yield return new WaitForSeconds(5);
         GameState(gameState.StartGame);

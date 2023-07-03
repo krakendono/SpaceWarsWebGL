@@ -4,15 +4,19 @@ using UnityEngine;
 
 public class PowerUp : MonoBehaviour
 {
-    public int powerUpId;
-    public float speed = 3f;
-    private Rigidbody rb;
-    private float screenHalfHeight;
+    [SerializeField]
+    internal int powerUpId; // Set in the inspector to give the player the power up
+    [SerializeField]
+    private float speed = 3f; // The speed of the power up falling from the top of the screen
+    private Rigidbody rigidBody;
+    private float screenHeight; // Get the height of the screen at the bottom to destroy the power up gameobject
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        screenHalfHeight = Camera.main.orthographicSize;
+        // Get the rigidbody component to apply movement
+        rigidBody = GetComponent<Rigidbody>();
+        // Get the height of the screen
+        screenHeight = Camera.main.orthographicSize;
     }
 
     void Update()
@@ -21,11 +25,10 @@ public class PowerUp : MonoBehaviour
         Vector2 movement = Vector2.down * speed;
 
         // Apply the movement to the enemy's rigidbody
-        rb.velocity = movement;
+        rigidBody.velocity = movement;
 
-        transform.Translate(Vector2.down * speed * Time.deltaTime);
-
-        if (transform.position.y < -screenHalfHeight)
+        // When this gameobject hits the bottomn of the screen destroy this object
+        if (transform.position.y < -screenHeight)
         {
             Destroy(this.gameObject);
         }

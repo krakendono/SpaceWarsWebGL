@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class Shooting : MonoBehaviour
 {
-    public GameObject projectilePrefab;
-    public Transform[] firePoint;
-    public float projectileSpeed = 10f;
-
+    [SerializeField]
+    private GameObject projectilePrefab; // Get the projectile to be fired
+    [SerializeField]
+    private Transform[] firePoint; // Get the position and rotation of the fire point
+    [SerializeField]
+    private float projectileSpeed = 10f; // Set the speed of the projectile after fired
+    private int weapon;
     // Update is called once per frame
     void Update()
     {
@@ -18,9 +21,10 @@ public class Shooting : MonoBehaviour
         }
     }
 
+    // Switch between the two types of power up shots
     private void weaponChoice()
     {
-        switch (PowerUpManager.Instance.weapon)
+        switch (weapon)
         {
             case 0:
                 baseShot();
@@ -31,48 +35,52 @@ public class Shooting : MonoBehaviour
         }
     }
 
-    private void baseShot()
+    private void baseShot() // The starting default shot
     {
         // Instantiate the projectile at the fire point position and rotation
         GameObject projectile = Instantiate(projectilePrefab, firePoint[0].position, firePoint[0].rotation);
 
         // Get the rigidbody component of the projectile
-        Rigidbody rb = projectile.GetComponent<Rigidbody>();
+        Rigidbody rigidBody = projectile.GetComponent<Rigidbody>();
 
         // Set the velocity of the projectile to make it move forward
-        rb.velocity = firePoint[0].up * projectileSpeed;
+        rigidBody.velocity = firePoint[0].up * projectileSpeed;
 
     }
 
-    private void tripleShot()
+    private void tripleShot() // The powerup shot shooting three bullets at one time
     {
+        // Create a projectile for all the fire point position and rotation
         GameObject projectile = Instantiate(projectilePrefab, firePoint[0].position, firePoint[0].rotation);
         GameObject projectile1 = Instantiate(projectilePrefab, firePoint[1].position, firePoint[1].rotation);
         GameObject projectile2 = Instantiate(projectilePrefab, firePoint[2].position, firePoint[2].rotation);
 
         // Get the rigidbody component of the projectile
-        Rigidbody rb = projectile.GetComponent<Rigidbody>();
-        Rigidbody rb1 = projectile1.GetComponent<Rigidbody>();
-        Rigidbody rb2 = projectile2.GetComponent<Rigidbody>();
+        Rigidbody rigidBody = projectile.GetComponent<Rigidbody>();
+        Rigidbody rigidBody1 = projectile1.GetComponent<Rigidbody>();
+        Rigidbody rigidBody2 = projectile2.GetComponent<Rigidbody>();
 
         // Set the velocity of the projectile to make it move forward
-        rb.velocity = firePoint[0].up * projectileSpeed;
-        rb1.velocity = firePoint[1].up * projectileSpeed;
-        rb2.velocity = firePoint[2].up * projectileSpeed;
+        rigidBody.velocity = firePoint[0].up * projectileSpeed;
+        rigidBody1.velocity = firePoint[1].up * projectileSpeed;
+        rigidBody2.velocity = firePoint[2].up * projectileSpeed;
 
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        // If the power up is above the 2 then we dont need to make any changes
         if(other.tag == "PowerUp" && other.GetComponent<PowerUp>().powerUpId < 2)
         {
-            PowerUpManager.Instance.weapon = other.GetComponent<PowerUp>().powerUpId;
+            // Get the powerUpId from the triggered power up then destroy the powerup 
+            weapon = other.GetComponent<PowerUp>().powerUpId;
             Destroy(other.gameObject);
         }
 
+        // When you hit the enemy reset the power ups to 0
         if (other.tag == "Enemy")
         {
-            PowerUpManager.Instance.weapon = 0;
+            weapon = 0;
         }
     }
 }
