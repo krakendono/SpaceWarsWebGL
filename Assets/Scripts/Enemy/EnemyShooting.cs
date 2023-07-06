@@ -13,14 +13,11 @@ public class EnemyShooting : MonoBehaviour
     private float spawnTimer; // The rate of fire for each shot
     [SerializeField]
     private float spawnInterval = 0.5f; // Set the the rate of fire
-    private Enemy enemy; // Check if the enemy has been hit or not and stop shooting
 
     void Start()
     {
         // Set the countdown spawnTimer to the spawnInterval
         spawnTimer = spawnInterval;
-        // Get the Enemy script component
-        enemy = GetComponent<Enemy>();
     }
 
     // Update is called once per frame
@@ -30,7 +27,7 @@ public class EnemyShooting : MonoBehaviour
         spawnTimer -= Time.deltaTime;
             
             // If the spawnTimer is 0 and the enemy isHit is false keep shooting and reset the spawnTimer by spawnInterval
-            if (spawnTimer <= 0f && !enemy.isHit)
+            if (spawnTimer <= 0f)
             {
                 baseShot();
                 spawnTimer = spawnInterval;

@@ -45,6 +45,12 @@ public class SpawnManager : MonoBehaviour
                 RandomPowerUp();
             }
         }
+
+        // Delete when bbuilding
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            RandomPowerUp();
+        }
     }
 
     void SpawnEnemy()

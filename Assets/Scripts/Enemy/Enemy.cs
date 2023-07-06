@@ -14,7 +14,8 @@ public class Enemy : Health
     private GameObject explosionObject; // Set the explosion prefab
     [SerializeField]
     private GameObject enemyObject; // Set the enemy prefab
-    internal bool isHit; // Check to see if the game object has been hit or not
+    private DropItem dropItem; // Get the dropItem script
+    private bool itemDropped; // Make sure we only triger 1 dropped item
 
     void Start()
     {
@@ -23,6 +24,9 @@ public class Enemy : Health
         // Get and set the height of the screen width and height using the camera screen space
         screenWidth = Camera.main.aspect * Camera.main.orthographicSize;
         screenHeight = Camera.main.orthographicSize;
+
+        // Get the component from the gameobject
+        dropItem = GetComponent<DropItem>();
     }
 
     void Update()
@@ -34,7 +38,7 @@ public class Enemy : Health
         rigidBody.velocity = movement;
 
         // Respawn the enemy if they have not been hit at the top of the screen 
-        if (transform.position.y < -screenHeight && !isHit)
+        if (transform.position.y < -screenHeight)
         {
             Respawn();
         }       
@@ -44,8 +48,7 @@ public class Enemy : Health
     {
         // Though for now enemys have only 0 health we can always change that and make them stronger in the future.
         // If the the enemy is dead then while the explosion is playing if it hits the bottom of the screen while
-        // the animation is playing it will just destroy itself. The box collider is still there while the animation
-        // is playing for added danger
+        // the animation is playing it will just destroy itself.
         if (other.tag == "Player" || other.tag == "Bullet")
         {
             if (health > 1)
@@ -54,20 +57,22 @@ public class Enemy : Health
             }
             else
             {
-                isHit = true;
-                explosionObject.SetActive(true);
-                enemyObject.SetActive(false);
+                // Make sure this enemy can drop an item if they dont have it move on
+                if (dropItem && !itemDropped)
+                {
+                    itemDropped = true;
+                    dropItem.Item();
+                }
+                Instantiate(explosionObject, transform.position, transform.rotation);
                 GameManager.Instance.AddScore(); // Add a score to the score to keep track
-                StartCoroutine(ExplosionTime()); // At the end of coroutine taking damage will cause the object to be destoyed
+                TakeDamage();
+            }
+            // Destroy the Player Bullet on contact
+            if(other.tag == "Bullet")
+            {
+                Destroy(other.gameObject);
             }
         }
-    }
-
-    IEnumerator ExplosionTime()
-    {
-        // Wait for the explosion animation to be played before destroying this object
-        yield return new WaitForSeconds(2.3f);
-        TakeDamage();
     }
 
     // Teleport the enemy at a random position at the sop of the screen

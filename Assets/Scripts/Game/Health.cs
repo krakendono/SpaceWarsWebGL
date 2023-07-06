@@ -5,14 +5,7 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     protected int health; // Health that can be set for the gameobject
-    private bool _isShield; // Make sure the player cannot double shield and extra lives
-
-    protected void SetPlayerHealth ()
-    {
-        // Used for the player to get their health
-        health = 3;
-    }
-    
+    protected int shieldAmount; // Shields now have can withstand 3 hits of damage.
 
     // Used for the enemy to take damage
     protected void TakeDamage()
@@ -25,12 +18,17 @@ public class Health : MonoBehaviour
         }
     }
 
-    // Player death triggers the gameover state and when hit removes the shield
+    // Player death triggers the gameover state and when hit removes a shield
     protected void PlayerTakeDamage()
     {
-        _isShield = false;
-        health--;
-
+        if (shieldAmount > 0 )
+        {
+            shieldAmount--;
+        }
+        else
+        {
+            health--;
+        }
         // When player reaches 0 change gamestate and destroy game object
         if (health <= 0)
         {
@@ -39,14 +37,20 @@ public class Health : MonoBehaviour
         }
     }
 
+    // Give the player health and keep a limit on it
+    protected void GainHealth()
+    {
+        if (health <= 2)
+        {
+            health++;
+        }
+    }
+
     // Turn the shield on if it is already on nothing happens
     protected void ShieldOn()
     {
-        if (!_isShield)
-        {
-            health++;
-            _isShield = true;
-        }
+
+            shieldAmount = 3;
     }
 
 }

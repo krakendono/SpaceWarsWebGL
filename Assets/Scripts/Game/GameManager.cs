@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -56,6 +56,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TMP_Text scoreNumber; // Get the score text UI prefab
     [SerializeField]
+    private TMP_Text ammoCount; // Get the ammo amount text to update it
+    internal int currentAmmoCount; // Get and set the current amount of ammo
+    [SerializeField]
     private GameObject[] GUI; // Get the Game UI prefab
     [SerializeField]
     private GameObject playerObject; // Get the player prefab
@@ -64,7 +67,8 @@ public class GameManager : MonoBehaviour
     private Player player; // Get the player script from the player prefab
     [SerializeField]
     internal GameObject[] livesUI; // Get the lives UI
-
+    [SerializeField]
+    internal Slider thruster; // Get the thruster UI slider
 
     private void Start()
     {        
@@ -79,6 +83,12 @@ public class GameManager : MonoBehaviour
     {
         currentScore++;
         scoreNumber.text = currentScore.ToString();
+    }
+
+    // Update the ammoCount text in th GUI
+    internal void SetAmmoCount()
+    {
+        ammoCount.text = currentAmmoCount.ToString();
     }
 
     // Cycle between each gamestate
@@ -112,8 +122,9 @@ public class GameManager : MonoBehaviour
     // Player gets created and given health game playing GUI is on and lives are turned on
     void PlayingGame()
     {
-        Instantiate(playerObject, playerSpawnPoint.transform.position, playerSpawnPoint.transform.rotation);
-        player = playerObject.GetComponent<Player>();
+        var playerGameObject = Instantiate(playerObject, playerSpawnPoint.transform.position, playerSpawnPoint.transform.rotation);
+        player = playerGameObject.GetComponent<Player>();
+        player.StartGames();
         GUI[0].SetActive(false);
         GUI[1].SetActive(true);
         GUI[2].SetActive(false);
@@ -121,7 +132,6 @@ public class GameManager : MonoBehaviour
         {
             lifeGUI.SetActive(true);
         }
-        player.StartGames();
     }
 
     // Gameover GUI is turned on and will switch to the start game after 5 seconds
