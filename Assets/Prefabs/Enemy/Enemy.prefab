@@ -216,6 +216,7 @@ MonoBehaviour:
   speed: 5
   explosionObject: {fileID: 703423299510848248, guid: 231731eccc3d83549b909adc82544e0c, type: 3}
   enemyObject: {fileID: 672763162134669906}
+  enemyLevel: 0
 --- !u!114 &-9149187551431889670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,5 +232,4 @@ MonoBehaviour:
   playerReward:
   - {fileID: 3015751529284523973, guid: 72d505f9781f6ff4e8f0d0f11c3fec0c, type: 3}
   - {fileID: 5586585576111336943, guid: 257a0246f7ebefb4fa6be0f6d0da9200, type: 3}
-  - {fileID: 3664510270890120112, guid: 454af877667189a4c8acfa3e6944af24, type: 3}
-  - {fileID: 3606941635097201690, guid: b4b23996814d7334b8263723160e8d39, type: 3}
+  - {fileID: 5769094694362053937, guid: 60f4036f5374a404d9911e52d38588ab, type: 3}

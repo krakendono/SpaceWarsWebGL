@@ -16,7 +16,7 @@ public class Shooting : MonoBehaviour
     void Update()
     {
         // Check for input to fire projectile
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetMouseButtonDown(0))
         {
             weaponChoice();
         }

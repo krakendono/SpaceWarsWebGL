@@ -46,13 +46,14 @@ public class GameManager : MonoBehaviour
     {
         StartGame,
         Playing,
-        GameOver
+        GameOver,
+        Debug
     }
 
     internal gameState currentGameState;
 
     private static GameManager instance;
-    private int currentScore; // The score that is tallied up on enemy death
+    internal int currentScore; // The score that is tallied up on enemy death
     [SerializeField]
     private TMP_Text scoreNumber; // Get the score text UI prefab
     [SerializeField]
@@ -69,6 +70,12 @@ public class GameManager : MonoBehaviour
     internal GameObject[] livesUI; // Get the lives UI
     [SerializeField]
     internal Slider thruster; // Get the thruster UI slider
+    [SerializeField]
+    private TMP_Text waveCountText; // Get the Text gameobject
+    [SerializeField]
+    internal GameObject waveCount; // Get the whole game object to turn on and off
+    [SerializeField]
+    private SpawnManager spawnManager; // Get the spawn manager to check to see what wave the player is on
 
     private void Start()
     {        
@@ -106,6 +113,9 @@ public class GameManager : MonoBehaviour
             case gameState.GameOver:
                 GameIsOver();
                 break;
+            case gameState.Debug:
+                DebugGame();
+                break;
         }
     }
 
@@ -119,8 +129,30 @@ public class GameManager : MonoBehaviour
         GUI[2].SetActive(false);
     }
 
+    // Set the wave ui text
+    internal void SetWaveCount(int waveCountInteger)
+    {
+        waveCountText.text = waveCountInteger.ToString();
+    }
+
     // Player gets created and given health game playing GUI is on and lives are turned on
     void PlayingGame()
+    {
+        spawnManager.StartCoroutine(spawnManager.WaveBreak());
+        var playerGameObject = Instantiate(playerObject, playerSpawnPoint.transform.position, playerSpawnPoint.transform.rotation);
+        player = playerGameObject.GetComponent<Player>();
+        player.StartGames();
+        GUI[0].SetActive(false);
+        GUI[1].SetActive(true);
+        GUI[2].SetActive(false);
+        foreach (GameObject lifeGUI in livesUI)
+        {
+            lifeGUI.SetActive(true);
+        }
+    }
+
+    // Debug the enemies
+    void DebugGame()
     {
         var playerGameObject = Instantiate(playerObject, playerSpawnPoint.transform.position, playerSpawnPoint.transform.rotation);
         player = playerGameObject.GetComponent<Player>();
@@ -128,6 +160,7 @@ public class GameManager : MonoBehaviour
         GUI[0].SetActive(false);
         GUI[1].SetActive(true);
         GUI[2].SetActive(false);
+        waveCount.SetActive(false);
         foreach (GameObject lifeGUI in livesUI)
         {
             lifeGUI.SetActive(true);
@@ -141,20 +174,36 @@ public class GameManager : MonoBehaviour
         GUI[1].SetActive(false);
         GUI[2].SetActive(true);
         StartCoroutine(GameOverWait());
+        spawnManager.waveCount = 0;
+        spawnManager.waveCountNumber = 0;
     }
 
     void Update()
     {
-        // Player can start the game with the R key if they are in the StartGame game state
-        if (Input.GetKeyDown(KeyCode.R) && currentGameState == gameState.StartGame)
-        {
-            GameState(gameState.Playing);
-        }
-
         // At any time the player can quit playing the game by hitting the escape key
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Application.Quit();
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            GameState(gameState.Debug);
+        }
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            GameState(gameState.GameOver);
+        }
+    }
+
+    public void startGame()
+    {
+        // Player can start the game if they are in the StartGame game state
+        if (currentGameState == gameState.StartGame)
+        {
+            GameState(gameState.Playing);
+
         }
     }
 

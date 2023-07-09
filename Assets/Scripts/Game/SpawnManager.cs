@@ -14,6 +14,10 @@ public class SpawnManager : MonoBehaviour
     private float screenWidth; // Get the width of the screen to spawn inside of it
     private float screenHeight; // Get the height of the screen to spawn at the top
     private int enemyCount; // Spawn a random power up when this hits 10
+    internal int waveCount; // The number enemies that should be spawned
+    internal int waveCountNumber; // The current wave the player is on
+    private bool canSpawn; // Ceck to see if stop spawning when on a break
+    private int enemySpawnLevel;// The level of the enemy that will be spawned
 
     void Start()
     {
@@ -27,11 +31,60 @@ public class SpawnManager : MonoBehaviour
 
     void Update()
     {
+        if (canSpawn)
+        {
+            EnemyWave();
+        }
+        // Delete when bbuilding
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            RandomPowerUp();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            DebugSpawnEnemy(0);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            DebugSpawnEnemy(1);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            DebugSpawnEnemy(2);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            DebugSpawnEnemy(3);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            DebugSpawnEnemy(4);
+        }
+    }
+
+    // Take a small break from the chaos and prepare for a harder battle
+    internal IEnumerator WaveBreak()
+    {        
+        canSpawn = false;
+        waveCountNumber++;
+        enemySpawnLevel = waveCountNumber;
+        GameManager.Instance.waveCount.SetActive(true);
+        GameManager.Instance.SetWaveCount(waveCountNumber);
+        yield return new WaitForSeconds(3);
+        GameManager.Instance.waveCount.SetActive(false);
+        enemyCount = 0;
+        waveCount += 10;
+        canSpawn = true;
+    }
+
+    internal void EnemyWave()
+    {
         // Countdown the spawnTimer by the time that has passed
         spawnTimer -= Time.deltaTime;
 
         // Check to make sure the game is in the playing state to spawn enemeis
-        if(GameManager.Instance.currentGameState == GameManager.gameState.Playing && spawnTimer <= 0f)
+        if(GameManager.Instance.currentGameState == GameManager.gameState.Playing && spawnTimer <= 0f && enemyCount <= waveCount)
         {
             // SpawnEnemy then reset the timer
             SpawnEnemy();
@@ -39,17 +92,16 @@ public class SpawnManager : MonoBehaviour
 
             // Add an enemy to the enemy count when it reaches 10 spawn RandomPowerUp and reset the counter to 0
             enemyCount++;
-            if (enemyCount >= 10)
+            if (enemyCount == waveCount)
             {
-                enemyCount = 0;
                 RandomPowerUp();
             }
         }
 
-        // Delete when bbuilding
-        if (Input.GetKeyDown(KeyCode.U))
+        // Create a wave system giving the player a break and increasing the difficulty
+        if (GameManager.Instance.currentGameState == GameManager.gameState.Playing && GameManager.Instance.currentScore >= waveCount)
         {
-            RandomPowerUp();
+            StartCoroutine(WaveBreak());
         }
     }
 
@@ -59,7 +111,24 @@ public class SpawnManager : MonoBehaviour
         float spawnX = Random.Range(-screenWidth, screenWidth);
         Vector3 spawnPosition = new Vector3(spawnX, screenHeight, transform.position.z);
         // Spawn a random prefab from the array at the top of the screen at its rotation
-        Instantiate(enemyPrefab[Random.Range(0, enemyPrefab.Length)], spawnPosition, Quaternion.identity);
+        if (enemySpawnLevel > enemyPrefab.Length)
+        {
+            enemySpawnLevel = enemyPrefab.Length;
+        }
+        Instantiate(enemyPrefab[Random.Range(0, enemySpawnLevel)], spawnPosition, Quaternion.identity);
+    }
+
+    void DebugSpawnEnemy(int esl)
+    {
+        // Get the position to spawn in the width of the screen. Then get the height of the screen to spawn at the top. 
+        float spawnX = Random.Range(-screenWidth, screenWidth);
+        Vector3 spawnPosition = new Vector3(spawnX, screenHeight, transform.position.z);
+        // Spawn a random prefab from the array at the top of the screen at its rotation
+        if (esl > enemyPrefab.Length)
+        {
+            esl = enemyPrefab.Length;
+        }
+        Instantiate(enemyPrefab[esl], spawnPosition, Quaternion.identity);
     }
 
     private void RandomPowerUp()

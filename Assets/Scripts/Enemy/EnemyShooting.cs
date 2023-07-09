@@ -12,12 +12,24 @@ public class EnemyShooting : MonoBehaviour
     private float projectileSpeed = 10f; // Set the speed for the projectile
     private float spawnTimer; // The rate of fire for each shot
     [SerializeField]
-    private float spawnInterval = 0.5f; // Set the the rate of fire
-
+    private float spawnInterval = 1.5f; // Set the the rate of fire
+    Enemy enemy; // Get access to the enemy movement
     void Start()
     {
         // Set the countdown spawnTimer to the spawnInterval
         spawnTimer = spawnInterval;
+
+        // Get the enemy script
+        enemy = GetComponent<Enemy>();
+
+        if (enemy.currentEnemyLevel == Enemy.EnemyLevel.LaserShip)
+        {
+            spawnInterval = 9f;
+        }
+        if (enemy.currentEnemyLevel == Enemy.EnemyLevel.RamShip)
+        {
+            spawnInterval = 8f;
+        }
     }
 
     // Update is called once per frame
@@ -25,17 +37,69 @@ public class EnemyShooting : MonoBehaviour
     {
         //Countdown the spawnTimer to 0
         spawnTimer -= Time.deltaTime;
-            
-            // If the spawnTimer is 0 and the enemy isHit is false keep shooting and reset the spawnTimer by spawnInterval
-            if (spawnTimer <= 0f)
+
+        // Shooting behavoirs applied to normal ship
+        if (enemy.currentEnemyLevel == Enemy.EnemyLevel.Ship)
+        {
+            if (GameManager.Instance.currentScore > 15)
             {
-                baseShot();
-                spawnTimer = spawnInterval;
+                spawnInterval = 1.5f;
             }
+            else if (GameManager.Instance.currentScore > 35)
+            {
+                spawnInterval = 0.7f;
+            }
+            else if (GameManager.Instance.currentScore > 50)
+            {
+                spawnInterval = 0.4f;
+            }
+        }
+
+        // If the spawnTimer is 0 attack the enemy
+        if (spawnTimer <= 0f && enemy.currentEnemyLevel == Enemy.EnemyLevel.Ship)
+        {
+            BaseShot();
+            spawnTimer = spawnInterval;
+        }
+        if (spawnTimer <= 0f && enemy.currentEnemyLevel == Enemy.EnemyLevel.LaserShip)
+        {
+            LaserShot();
+        }
+
+        // Ram the player instead of shooting at them
+        if (spawnTimer <= 0f && enemy.currentEnemyLevel == Enemy.EnemyLevel.RamShip)
+        {
+            RamShip();
+
+        }
+    }
+
+    void RamShip()
+    {
+        spawnTimer = spawnInterval;
+        enemy.StartCoroutine(enemy.RamPlayerShip());
+    }
+
+    // Fire a powerful laser at the player
+    void LaserShot()
+    {
+        spawnTimer = spawnInterval;
+        StartCoroutine(LaserShooting());       
+    }
+
+    // Cooldown for the laser
+    IEnumerator LaserShooting()
+    {
+        enemy.canMove = false;
+        yield return new WaitForSeconds(3);
+        // Instantiate the projectile at the fire point position and rotation
+        GameObject projectile = Instantiate(projectilePrefab, firePoint[0].position, firePoint[0].rotation);
+        yield return new WaitForSeconds(3);
+        enemy.canMove = true;
     }
 
     // Default shot of enemy
-    private void baseShot()
+    private void BaseShot()
     {
         // Instantiate the projectile at the fire point position and rotation
         GameObject projectile = Instantiate(projectilePrefab, firePoint[0].position, firePoint[0].rotation);

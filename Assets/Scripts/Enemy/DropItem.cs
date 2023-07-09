@@ -20,6 +20,6 @@ public class DropItem : MonoBehaviour
         }
 
         // Spawn whatever you get
-        Instantiate(playerReward[reward], transform.position, transform.rotation);
+        Instantiate(playerReward[reward], transform.position, Quaternion.identity);
     }
 }

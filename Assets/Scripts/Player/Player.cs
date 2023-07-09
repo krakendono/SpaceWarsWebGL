@@ -26,7 +26,7 @@ public class Player : Health
     [SerializeField]
     private AudioSource powerUpSound; // Power up sound
     private CameraShake cameraShake; // Get the Camera gameobject and grab the CameraSHake script
-
+    Vector3 pointingTarget;
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +50,7 @@ public class Player : Health
     void Update()
     {
         movePlayer();
+        RotatePlayer();
 
         // Check if the player is using the thruster and if the have enough thrusterAmount aka gas
         if (Input.GetKeyDown(KeyCode.LeftShift) && thrusterAmount >= 0)
@@ -70,6 +71,13 @@ public class Player : Health
 
         // Burn the gas up if isThrusterOn is true
         ThrustersFuel();
+
+        //Destroy gameobjects if the rounds ends
+        if (GameManager.Instance.currentGameState == GameManager.gameState.GameOver)
+        {
+            Destroy(gameObject);
+        }
+
     }
 
     void LateUpdate()
@@ -93,6 +101,19 @@ public class Player : Health
 
         // Move the player rigid body by the movement given
         rigidBody.MovePosition(rigidBody.position + movement);
+    }
+
+    // rotate player to look at the mouse
+    void RotatePlayer()
+    {
+        pointingTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition + Vector3.back * Camera.main.transform.position.z);
+        transform.LookAt(pointingTarget, Vector3.back);
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.DrawSphere(pointingTarget, 0.2f);
+        Gizmos.DrawLine(transform.position, pointingTarget);
     }
 
     void ThrustersOn()
@@ -213,8 +234,23 @@ public class Player : Health
             ChangeHealthAdd();
             Destroy(other.gameObject);
         }
+
+        // Reduce the player speed then return it to base
+        if(other.tag == "SpeedReduce")
+        {
+            moveSpeed = 0f;
+            cameraShake.Shake();
+            StartCoroutine(ReturnSpeed());
+            Destroy(other.gameObject);
+        }
     }
 
+    // Return player speed back to normal
+    IEnumerator ReturnSpeed()
+    {
+        yield return new WaitForSeconds(0.7f);
+        moveSpeed = 5f;
+    }
     // Change health down if player gets hit
     private void ChangeHealthMinus()
     {
